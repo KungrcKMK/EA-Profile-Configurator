@@ -1,916 +1,724 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EA Profile Configurator — MT4/MT5</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EA Profile Configurator</title>
 <style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --card2: #22263a;
-    --border: #2e3250;
-    --accent: #4f8ef7;
-    --accent2: #7c5ef7;
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --red: #ef4444;
-    --text: #e2e8f0;
-    --muted: #8892a4;
-    --tg: #29a8e0;
-    --input-bg: #181b28;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+  body {
+    background: #0d1117; color: #e6edf3;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 {
+    text-align: center; font-size: 1.8rem;
+    background: linear-gradient(90deg, #58a6ff, #bc8cff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .subtitle { text-align: center; color: #8b949e; font-size: 0.85rem; margin-bottom: 20px; }
 
-  /* HEADER */
-  .header {
-    background: linear-gradient(135deg, #1a1d27, #22263a);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 24px;
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  /* Platform Toggle */
+  .platform-toggle {
+    display: flex; justify-content: center;
+    gap: 12px; margin-bottom: 20px;
   }
-  .header h1 { font-size: 1.3rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  .header h1 span { color: var(--text); }
+  .platform-btn {
+    padding: 10px 32px; border: 2px solid #30363d;
+    background: #161b22; color: #8b949e;
+    border-radius: 8px; cursor: pointer;
+    font-size: 1rem; font-weight: bold;
+    transition: all 0.2s;
+  }
+  .platform-btn.active {
+    background: linear-gradient(135deg, #58a6ff22, #bc8cff22);
+    border-color: #58a6ff; color: #58a6ff;
+  }
 
-  /* PLATFORM TOGGLE */
-  .platform-toggle { display: flex; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .platform-toggle button {
-    padding: 8px 22px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
-    background: var(--card2); color: var(--muted); border: none; transition: all .2s;
+  /* Preset Buttons */
+  .preset-bar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 20px;
   }
-  .platform-toggle button.active { background: var(--accent); color: #fff; }
+  .preset-btn {
+    padding: 8px 22px; border: none;
+    border-radius: 20px; cursor: pointer;
+    font-weight: bold; font-size: 0.85rem;
+    transition: opacity 0.2s;
+  }
+  .preset-btn:hover { opacity: 0.85; }
+  .btn-conservative { background: #238636; color: #fff; }
+  .btn-balanced     { background: #1f6feb; color: #fff; }
+  .btn-aggressive   { background: #da3633; color: #fff; }
+  .btn-custom       { background: #6e40c9; color: #fff; }
 
-  /* MODE TABS */
-  .mode-tabs { display: flex; gap: 8px; padding: 16px 24px; flex-wrap: wrap; }
-  .mode-tab {
-    padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-    cursor: pointer; border: 1.5px solid var(--border); background: var(--card2); color: var(--muted); transition: all .2s;
+  /* Risk Meter */
+  .risk-meter-wrap {
+    background: #161b22; border: 1px solid #30363d;
+    border-radius: 10px; padding: 14px 20px;
+    margin-bottom: 20px;
   }
-  .mode-tab.active-conservative { background: #1a3a2a; border-color: var(--green); color: var(--green); }
-  .mode-tab.active-balanced { background: #2a2a1a; border-color: var(--yellow); color: var(--yellow); }
-  .mode-tab.active-aggressive { background: #3a1a1a; border-color: var(--red); color: var(--red); }
-  .mode-tab.active-custom { background: #1a1a3a; border-color: var(--accent2); color: var(--accent2); }
+  .risk-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.85rem; color: #8b949e; margin-bottom: 6px;
+  }
+  .risk-bar-bg {
+    background: #21262d; border-radius: 10px;
+    height: 12px; overflow: hidden;
+  }
+  .risk-bar-fill {
+    height: 100%; border-radius: 10px;
+    transition: width 0.4s, background 0.4s;
+    background: #238636;
+  }
+  .risk-text {
+    text-align: right; font-size: 0.78rem;
+    margin-top: 4px; color: #8b949e;
+  }
 
-  /* RISK METER */
-  .risk-meter {
-    margin: 0 24px 16px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px 20px;
+  /* Section Card */
+  .section-card {
+    background: #161b22; border: 1px solid #30363d;
+    border-radius: 12px; padding: 18px 22px;
+    margin-bottom: 16px;
   }
-  .risk-meter h3 { font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-  .risk-bar-wrap { background: var(--card2); border-radius: 8px; height: 12px; overflow: hidden; margin-bottom: 10px; }
-  .risk-bar { height: 100%; border-radius: 8px; transition: all .4s; }
-  .risk-stats { display: flex; gap: 20px; flex-wrap: wrap; }
-  .risk-stat { display: flex; flex-direction: column; }
-  .risk-stat label { font-size: 0.7rem; color: var(--muted); }
-  .risk-stat span { font-size: 0.9rem; font-weight: 700; }
+  .section-title {
+    font-size: 1rem; font-weight: bold;
+    color: #58a6ff; margin-bottom: 14px;
+    border-bottom: 1px solid #21262d; padding-bottom: 8px;
+  }
+  .field-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 14px;
+  }
+  @media(max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-label {
+    font-size: 0.82rem; color: #e6edf3; font-weight: 600;
+  }
+  .field-desc {
+    font-size: 0.72rem; color: #8b949e; margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .field-input {
+    background: #0d1117; border: 1px solid #30363d;
+    color: #e6edf3; border-radius: 6px;
+    padding: 7px 10px; font-size: 0.88rem;
+    outline: none; transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: #58a6ff; }
+  .field-input:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+  select.field-input option { background: #161b22; }
 
-  /* MAIN LAYOUT */
-  .main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 24px 24px; }
-  @media(max-width: 800px) { .main { grid-template-columns: 1fr; } }
+  /* Toggle Switch */
+  .toggle-row {
+    display: flex; align-items: center;
+    gap: 10px; margin-bottom: 10px;
+  }
+  .toggle-switch {
+    position: relative; width: 40px; height: 22px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: #30363d; border-radius: 22px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute;
+    width: 16px; height: 16px;
+    background: #fff; border-radius: 50%;
+    left: 3px; top: 3px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: #238636; }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+  .toggle-label-text { font-size: 0.82rem; color: #e6edf3; }
+  .toggle-desc { font-size: 0.72rem; color: #8b949e; }
 
-  /* SECTIONS */
-  .section {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  /* Telegram Section */
+  .telegram-section { border-color: #2ea043 !important; }
+  .telegram-title { color: #2ea043 !important; }
+  .tg-test-btn {
+    margin-top: 10px; padding: 8px 20px;
+    background: #2ea043; border: none;
+    color: #fff; border-radius: 6px;
+    cursor: pointer; font-size: 0.85rem;
+    font-weight: bold; transition: background 0.2s;
   }
-  .section-header {
-    background: var(--card2); padding: 12px 16px; display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid var(--border);
+  .tg-test-btn:hover { background: #238636; }
+  .tg-status {
+    margin-top: 8px; font-size: 0.78rem;
+    padding: 6px 10px; border-radius: 6px;
+    display: none;
   }
-  .section-header .icon { font-size: 1.1rem; }
-  .section-header h2 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
-  .section-header .badge {
-    margin-left: auto; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
-    background: #1a1a3a; color: var(--accent); border: 1px solid var(--accent);
-  }
-  .section-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .tg-status.ok  { display:block; background:#23863622; color:#2ea043; border:1px solid #2ea043; }
+  .tg-status.err { display:block; background:#da363322; color:#f85149; border:1px solid #da3633; }
 
-  /* FIELD */
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field-header { display: flex; justify-content: space-between; align-items: center; }
-  .field-label { font-size: 0.78rem; font-weight: 600; color: var(--text); }
-  .field-value { font-size: 0.75rem; color: var(--accent); font-weight: 700; }
-  .field-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; background: var(--card2); padding: 5px 8px; border-radius: 6px; border-left: 2px solid var(--border); }
+  /* MT5 Section */
+  .mt5-section { border-color: #bc8cff !important; }
+  .mt5-title { color: #bc8cff !important; }
+  .mt5-hidden { display: none !important; }
 
-  input[type=range] {
-    width: 100%; accent-color: var(--accent); cursor: pointer; height: 4px;
+  /* Output */
+  .output-section {
+    background: #0d1117; border: 1px solid #30363d;
+    border-radius: 12px; padding: 18px;
+    margin-top: 10px;
   }
-  input[type=range]:disabled { opacity: 0.4; cursor: not-allowed; }
-  input[type=text], input[type=number], select {
-    width: 100%; background: var(--input-bg); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 7px 10px; font-size: 0.82rem;
-    outline: none; transition: border .2s;
+  .output-title {
+    font-size: 0.9rem; color: #58a6ff;
+    margin-bottom: 10px; font-weight: bold;
   }
-  input[type=text]:focus, input[type=number]:focus, select:focus { border-color: var(--accent); }
-  input[type=text].custom-active, input[type=number].custom-active { border-color: var(--accent2); }
+  textarea.output-box {
+    width: 100%; height: 300px;
+    background: #010409; border: 1px solid #21262d;
+    color: #7ee787; font-family: monospace;
+    font-size: 0.78rem; border-radius: 8px;
+    padding: 12px; resize: vertical; outline: none;
+  }
+  .action-bar {
+    display: flex; gap: 10px; margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 9px 24px; border: none;
+    border-radius: 8px; cursor: pointer;
+    font-weight: bold; font-size: 0.85rem;
+    transition: opacity 0.2s;
+  }
+  .action-btn:hover { opacity: 0.85; }
+  .btn-generate  { background: #1f6feb; color: #fff; }
+  .btn-copy      { background: #6e40c9; color: #fff; }
+  .btn-download  { background: #238636; color: #fff; }
 
-  /* TOGGLE SWITCH */
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .toggle-label-wrap { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-  .toggle-label { font-size: 0.78rem; font-weight: 600; color: var(--text); }
-  .toggle-desc { font-size: 0.68rem; color: var(--muted); }
-  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; cursor: pointer; inset: 0; background: var(--card2); border-radius: 22px; border: 1px solid var(--border); transition: .3s; }
-  .slider:before { position: absolute; content:""; height:16px; width:16px; left:2px; bottom:2px; background:#666; border-radius:50%; transition:.3s; }
-  input:checked + .slider { background: var(--accent); border-color: var(--accent); }
-  input:checked + .slider:before { transform: translateX(18px); background: #fff; }
-
-  /* TELEGRAM SECTION */
-  .tg-section { background: var(--card); border: 1px solid #29a8e033; border-radius: 14px; overflow: hidden; }
-  .tg-header { background: linear-gradient(90deg, #1a2a3a, #0e1f2e); padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #29a8e033; }
-  .tg-header h2 { font-size: 0.9rem; font-weight: 700; color: var(--tg); }
-  .tg-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .tg-input-wrap { position: relative; }
-  .tg-input-wrap input { padding-right: 70px; }
-  .tg-eye {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    background: var(--card2); border: 1px solid var(--border); border-radius: 6px;
-    color: var(--muted); font-size: 0.7rem; padding: 3px 8px; cursor: pointer;
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 12px; font-size: 0.7rem;
+    font-weight: bold; margin-left: 6px;
+    vertical-align: middle;
   }
-  .tg-status { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; background: var(--card2); }
-  .tg-status.ok { color: var(--green); border: 1px solid #22c55e33; }
-  .tg-status.warn { color: var(--yellow); border: 1px solid #f59e0b33; }
-
-  /* OUTPUT */
-  .output-wrap { padding: 0 24px 24px; }
-  .output-box {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-  }
-  .output-header { background: var(--card2); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-  .output-header h2 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
-  .output-actions { display: flex; gap: 8px; }
-  .btn {
-    padding: 7px 16px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
-    cursor: pointer; border: none; transition: all .2s;
-  }
-  .btn-copy { background: var(--accent); color: #fff; }
-  .btn-copy:hover { background: #3a7ef7; }
-  .btn-dl { background: var(--green); color: #fff; }
-  .btn-dl:hover { background: #16a34a; }
-  .btn-tgtest { background: var(--tg); color: #fff; }
-  .btn-tgtest:hover { background: #1a8abf; }
-  pre {
-    padding: 16px; font-size: 0.75rem; color: #a5f3a5; overflow-x: auto;
-    line-height: 1.7; max-height: 340px; overflow-y: auto; white-space: pre-wrap;
-    font-family: 'Courier New', monospace;
-  }
-  .mt5-only { transition: all .3s; }
-  .mt5-only.hidden { display: none; }
-  .full-span { grid-column: 1 / -1; }
+  .badge-mt5 { background: #bc8cff33; color: #bc8cff; border: 1px solid #bc8cff; }
+  .badge-new { background: #2ea04333; color: #2ea043; border: 1px solid #2ea043; }
 </style>
 </head>
 <body>
+<div class="container">
+  <h1>⚙️ EA Profile Configurator</h1>
+  <p class="subtitle">MT4 / MT5 · สร้างไฟล์ <strong>.set</strong> พร้อมใช้งาน · คำอธิบายภาษาไทย</p>
 
-<!-- HEADER -->
-<div class="header">
-  <h1>⚙️ EA Profile <span>Configurator</span></h1>
+  <!-- Platform Toggle -->
   <div class="platform-toggle">
-    <button id="btnMT4" class="active" onclick="setPlatform('MT4')">MT4</button>
-    <button id="btnMT5" onclick="setPlatform('MT5')">MT5</button>
+    <button class="platform-btn active" id="btnMT4" onclick="setPlatform('MT4')">MT4</button>
+    <button class="platform-btn"        id="btnMT5" onclick="setPlatform('MT5')">MT5</button>
   </div>
-</div>
 
-<!-- MODE TABS -->
-<div class="mode-tabs">
-  <button class="mode-tab" id="tab-conservative" onclick="setMode('conservative')">🛡️ Conservative</button>
-  <button class="mode-tab" id="tab-balanced" onclick="setMode('balanced')">⚖️ Balanced</button>
-  <button class="mode-tab" id="tab-aggressive" onclick="setMode('aggressive')">🔥 Aggressive</button>
-  <button class="mode-tab" id="tab-custom" onclick="setMode('custom')">🎛️ Custom</button>
-</div>
-
-<!-- RISK METER -->
-<div class="risk-meter">
-  <h3>📊 Live Risk Meter</h3>
-  <div class="risk-bar-wrap"><div class="risk-bar" id="riskBar" style="width:30%;background:var(--green)"></div></div>
-  <div class="risk-stats">
-    <div class="risk-stat"><label>Max DD</label><span id="rm-dd" style="color:var(--green)">10%</span></div>
-    <div class="risk-stat"><label>Max Orders</label><span id="rm-orders">3</span></div>
-    <div class="risk-stat"><label>Lot Multiplier</label><span id="rm-mult">1.2x</span></div>
-    <div class="risk-stat"><label>Risk Level</label><span id="rm-level" style="color:var(--green)">🟢 LOW</span></div>
-    <div class="risk-stat"><label>Platform</label><span id="rm-plat" style="color:var(--accent)">MT4</span></div>
-    <div class="risk-stat"><label>Mode</label><span id="rm-mode" style="color:var(--muted)">—</span></div>
+  <!-- Preset Bar -->
+  <div class="preset-bar">
+    <button class="preset-btn btn-conservative" onclick="applyPreset('conservative')">🛡️ Conservative</button>
+    <button class="preset-btn btn-balanced"     onclick="applyPreset('balanced')">⚖️ Balanced</button>
+    <button class="preset-btn btn-aggressive"   onclick="applyPreset('aggressive')">🔥 Aggressive</button>
+    <button class="preset-btn btn-custom"       onclick="applyPreset('custom')">🎛️ Custom</button>
   </div>
-</div>
 
-<!-- MAIN GRID -->
-<div class="main">
+  <!-- Risk Meter -->
+  <div class="risk-meter-wrap">
+    <div class="risk-label">
+      <span>📊 Risk Meter</span>
+      <span id="riskLabel">ปานกลาง</span>
+    </div>
+    <div class="risk-bar-bg">
+      <div class="risk-bar-fill" id="riskBar" style="width:40%"></div>
+    </div>
+    <div class="risk-text" id="riskText">Risk Score: 40 / 100</div>
+  </div>
 
   <!-- SECTION 1: Risk Management -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">🔰</span>
-      <h2>Risk Management</h2>
-    </div>
-    <div class="section-body">
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Max DD (%)</span>
-          <span class="field-value" id="val-maxdd">10%</span>
-        </div>
-        <input type="range" id="maxdd" min="5" max="50" step="1" value="10" oninput="onRange('maxdd','val-maxdd','%');update()">
-        <div class="field-desc">📌 <b>Maximum Drawdown</b> — ขาดทุนสูงสุดที่ยอมรับได้ เทียบกับยอด Balance ทั้งหมด เช่น 20% = Balance 1,000$ ขาดทุนถึง 200$ ระบบจะหยุดทำงานอัตโนมัติ</div>
+  <div class="section-card">
+    <div class="section-title">🔰 Risk Management (การจัดการความเสี่ยง)</div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Initial Lot</label>
+        <span class="field-desc">ขนาด Lot เริ่มต้น — ควรเลือกให้เหมาะกับ Balance เช่น 0.01 ต่อทุก $1,000</span>
+        <input class="field-input" type="number" id="initialLot" value="0.01" step="0.01" min="0.01" oninput="updateRisk()">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Max Orders</span>
-          <span class="field-value" id="val-maxord">3</span>
-        </div>
-        <input type="range" id="maxord" min="1" max="20" step="1" value="3" oninput="onRange('maxord','val-maxord','');update()">
-        <div class="field-desc">📌 จำนวน Order สูงสุดที่เปิดพร้อมกันได้ในบัญชี ยิ่งมาก = ยิ่งใช้ Margin มากและเสี่ยงสูงขึ้น</div>
+      <div class="field-group">
+        <label class="field-label">Risk Per Trade (%)</label>
+        <span class="field-desc">เปอร์เซ็นต์ความเสี่ยงต่อ 1 Trade เช่น 2% ของ $1,000 = เสี่ยงได้ $20</span>
+        <input class="field-input" type="number" id="riskPerTrade" value="2" step="0.5" min="0.5" max="10" oninput="updateRisk()">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Initial Lot</span>
-          <span class="field-value" id="val-initlot">0.01</span>
-        </div>
-        <input type="range" id="initlot" min="0.01" max="1.0" step="0.01" value="0.01" oninput="onRange('initlot','val-initlot','');update()">
-        <div class="field-desc">📌 ขนาด Lot เริ่มต้นของ Order แรก ควรเลือกให้เหมาะสมกับขนาด Balance เช่น Balance 500$ ควรใช้ 0.01</div>
+      <div class="field-group">
+        <label class="field-label">Max Drawdown (%)</label>
+        <span class="field-desc">ขาดทุนสูงสุดที่ยอมรับได้ เทียบกับ Balance ทั้งหมด — ถึงค่านี้ EA จะหยุดทำงาน</span>
+        <input class="field-input" type="number" id="maxDD" value="20" step="5" min="5" max="50" oninput="updateRisk()">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Lot Multiplier</span>
-          <span class="field-value" id="val-mult">1.2x</span>
-        </div>
-        <input type="range" id="mult" min="1.0" max="3.0" step="0.1" value="1.2" oninput="onRange('mult','val-mult','x');update()">
-        <div class="field-desc">📌 ตัวคูณขนาด Lot เมื่อเปิด Order ใหม่ (ใช้ใน Martingale/Grid) เช่น 1.5 = Lot ถัดไปใหญ่ขึ้น 1.5 เท่า ⚠️ ยิ่งมากยิ่งเสี่ยง</div>
+      <div class="field-group">
+        <label class="field-label">Max Orders</label>
+        <span class="field-desc">จำนวน Order สูงสุดที่เปิดพร้อมกันได้ — ยิ่งมากยิ่งใช้ Margin สูง</span>
+        <input class="field-input" type="number" id="maxOrders" value="5" step="1" min="1" max="20" oninput="updateRisk()">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Risk Per Trade (%)</span>
-          <span class="field-value" id="val-rpt">1%</span>
-        </div>
-        <input type="range" id="rpt" min="0.5" max="10" step="0.5" value="1" oninput="onRange('rpt','val-rpt','%');update()">
-        <div class="field-desc">📌 เปอร์เซ็นต์ความเสี่ยงต่อ 1 Trade เช่น 2% ของ Balance 1,000$ = ยอมเสียได้สูงสุด 20$ ต่อ Trade</div>
+      <div class="field-group">
+        <label class="field-label">Lot Multiplier</label>
+        <span class="field-desc">ตัวคูณขนาด Lot เมื่อเปิด Order ใหม่ (Martingale) เช่น 1.5 = Lot ถัดไปใหญ่ขึ้น 1.5×</span>
+        <input class="field-input" type="number" id="lotMultiplier" value="1.5" step="0.1" min="1.0" max="5.0" oninput="updateRisk()">
       </div>
-
+      <div class="field-group">
+        <label class="field-label">Magic Number</label>
+        <span class="field-desc">หมายเลขประจำตัว EA — ใช้แยก Order ของ EA นี้จาก EA ตัวอื่นในบัญชีเดียวกัน</span>
+        <input class="field-input" type="number" id="magicNumber" value="123456">
+      </div>
     </div>
   </div>
 
   <!-- SECTION 2: Entry Settings -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">📈</span>
-      <h2>Entry Settings</h2>
-    </div>
-    <div class="section-body">
-
-      <div class="field">
-        <span class="field-label">Signal Mode</span>
-        <select id="sigmode" onchange="update()">
+  <div class="section-card">
+    <div class="section-title">📈 Entry Settings (การตั้งค่าเข้า Order)</div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Signal Mode</label>
+        <span class="field-desc">ทิศทางที่ EA จะเปิด Order — Buy / Sell / หรือทั้งสองทิศ</span>
+        <select class="field-input" id="signalMode">
           <option value="Both">Both (Buy & Sell)</option>
           <option value="Buy">Buy Only</option>
           <option value="Sell">Sell Only</option>
         </select>
-        <div class="field-desc">📌 กำหนดทิศทางที่ EA จะเปิด Order — <b>Both</b> = ทั้ง 2 ทิศทาง, <b>Buy Only</b> = ซื้อเท่านั้น, <b>Sell Only</b> = ขายเท่านั้น</div>
       </div>
-
-      <div class="field">
-        <span class="field-label">Entry Type</span>
-        <select id="entrytype" onchange="update()">
-          <option value="Market">Market Order</option>
-          <option value="Pending">Pending Order</option>
+      <div class="field-group">
+        <label class="field-label">Entry Type</label>
+        <span class="field-desc">Market = เข้าทันทีราคาปัจจุบัน | Pending = รอราคาถึงจุดที่กำหนด</span>
+        <select class="field-input" id="entryType">
+          <option value="Market">Market</option>
+          <option value="Pending">Pending</option>
         </select>
-        <div class="field-desc">📌 <b>Market</b> = เข้า Order ทันทีที่ราคาปัจจุบัน | <b>Pending</b> = รอราคาถึงจุดที่กำหนดก่อนเข้า</div>
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Magic Number</span>
-          <span class="field-value" id="val-magic">1001</span>
-        </div>
-        <input type="range" id="magic" min="1000" max="9999" step="1" value="1001" oninput="onRange('magic','val-magic','');update()">
-        <div class="field-desc">📌 หมายเลขประจำตัว EA — ใช้แยกแยะ Order ของ EA นี้ออกจาก EA ตัวอื่นในบัญชีเดียวกัน ควรตั้งให้ไม่ซ้ำกัน</div>
+      <div class="field-group">
+        <label class="field-label">Max Spread (Points)</label>
+        <span class="field-desc">Spread สูงสุดที่ยอมให้เปิด Order — ถ้า Spread กว้างกว่านี้ EA จะไม่เข้า</span>
+        <input class="field-input" type="number" id="maxSpread" value="30" step="5" min="5">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Max Spread (Points)</span>
-          <span class="field-value" id="val-spread">20</span>
-        </div>
-        <input type="range" id="spread" min="5" max="100" step="1" value="20" oninput="onRange('spread','val-spread','');update()">
-        <div class="field-desc">📌 Spread สูงสุดที่ยอมให้เปิด Order ถ้า Spread กว้างกว่านี้ EA จะไม่เข้า Order เพื่อป้องกันค่าใช้จ่ายสูงเกิน</div>
+      <div class="field-group">
+        <label class="field-label">Slippage (Points)</label>
+        <span class="field-desc">ความคลาดเคลื่อนราคาที่ยอมรับได้ ระหว่างสั่งซื้อกับราคาที่ได้จริง</span>
+        <input class="field-input" type="number" id="slippage" value="10" step="1" min="1">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Slippage (Points)</span>
-          <span class="field-value" id="val-slip">3</span>
-        </div>
-        <input type="range" id="slip" min="1" max="50" step="1" value="3" oninput="onRange('slip','val-slip','');update()">
-        <div class="field-desc">📌 ความคลาดเคลื่อนของราคาที่ยอมรับได้ระหว่างราคาที่สั่งซื้อกับราคาที่ได้จริงจาก Broker</div>
-      </div>
-
     </div>
   </div>
 
-  <!-- SECTION 3: Take Profit & Stop Loss -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">🎯</span>
-      <h2>Take Profit & Stop Loss</h2>
+  <!-- SECTION 3: TP / SL -->
+  <div class="section-card">
+    <div class="section-title">🎯 Take Profit & Stop Loss</div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Take Profit (Pips)</label>
+        <span class="field-desc">เป้าหมายกำไร — ปิด Order อัตโนมัติเมื่อกำไรถึงค่านี้</span>
+        <input class="field-input" type="number" id="takeProfit" value="50" step="5" min="5">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Stop Loss (Pips)</label>
+        <span class="field-desc">จุดตัดขาดทุน — ปิด Order อัตโนมัติเมื่อขาดทุนถึงค่านี้</span>
+        <input class="field-input" type="number" id="stopLoss" value="30" step="5" min="5">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Trailing Step (Pips)</label>
+        <span class="field-desc">ระยะที่ Trailing Stop จะขยับตามราคา — ยิ่งน้อยยิ่ง Tight</span>
+        <input class="field-input" type="number" id="trailingStep" value="15" step="5" min="5" id="trailingStepInput">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Break Even (Pips)</label>
+        <span class="field-desc">เมื่อกำไรถึงค่านี้ ระบบย้าย SL มาที่ราคาทุน — ปิด Order ไม่ขาดทุน</span>
+        <input class="field-input" type="number" id="breakEven" value="20" step="5" min="0">
+      </div>
     </div>
-    <div class="section-body">
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Take Profit (Pips)</span>
-          <span class="field-value" id="val-tp">50</span>
-        </div>
-        <input type="range" id="tp" min="5" max="500" step="5" value="50" oninput="onRange('tp','val-tp','');update()">
-        <div class="field-desc">📌 จุดเป้าหมายทำกำไร นับเป็น Pips เช่น 50 = ปิด Order อัตโนมัติเมื่อกำไรครบ 50 Pips</div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="trailingStop" checked onchange="updateRisk()"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Trailing Stop</div>
+        <div class="toggle-desc">เปิด = SL ขยับตามราคาอัตโนมัติเมื่อกำไรเพิ่ม ช่วยล็อคกำไร</div>
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Stop Loss (Pips)</span>
-          <span class="field-value" id="val-sl">30</span>
-        </div>
-        <input type="range" id="sl" min="5" max="500" step="5" value="30" oninput="onRange('sl','val-sl','');update()">
-        <div class="field-desc">📌 จุดตัดขาดทุน นับเป็น Pips เช่น 30 = ปิด Order อัตโนมัติเมื่อขาดทุนถึง 30 Pips เพื่อจำกัดความเสียหาย</div>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Trailing Stop</span>
-          <span class="toggle-desc">📌 SL จะขยับตามราคาอัตโนมัติเมื่อกำไรเพิ่มขึ้น ช่วยล็อคกำไรโดยไม่ให้ราคาย้อนกลับมาหมด</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="trail" onchange="update()"><span class="slider"></span></label>
-      </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Trailing Step (Pips)</span>
-          <span class="field-value" id="val-trailstep">10</span>
-        </div>
-        <input type="range" id="trailstep" min="1" max="50" step="1" value="10" oninput="onRange('trailstep','val-trailstep','');update()">
-        <div class="field-desc">📌 ระยะห่างที่ Trailing Stop จะขยับตามราคา ยิ่งน้อย = ยิ่งติดราคาใกล้ (ต้องเปิด Trailing Stop)</div>
-      </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Break Even (Pips)</span>
-          <span class="field-value" id="val-be">15</span>
-        </div>
-        <input type="range" id="be" min="5" max="100" step="5" value="15" oninput="onRange('be','val-be','');update()">
-        <div class="field-desc">📌 เมื่อกำไรถึงระดับนี้ ระบบจะย้าย SL มาที่ราคาทุนอัตโนมัติ ทำให้แน่ใจว่า Order นี้จะไม่ขาดทุน</div>
-      </div>
-
     </div>
   </div>
 
   <!-- SECTION 4: Grid / Martingale -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">🔄</span>
-      <h2>Grid / Martingale</h2>
+  <div class="section-card">
+    <div class="section-title">🔄 Grid / Martingale Settings</div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Grid Step (Pips)</label>
+        <span class="field-desc">ระยะห่างระหว่าง Order แต่ละตัว — เช่น 20 pips = เปิด Order ใหม่ทุกๆ 20 pips</span>
+        <input class="field-input" type="number" id="gridStep" value="30" step="5" min="5" oninput="updateRisk()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Max Grid Orders</label>
+        <span class="field-desc">จำนวน Order สูงสุดในแนว Grid — ยิ่งมากยิ่งเสี่ยงสูง ใช้เงินทุนมากขึ้น</span>
+        <input class="field-input" type="number" id="maxGridOrders" value="5" step="1" min="1" oninput="updateRisk()">
+      </div>
     </div>
-    <div class="section-body">
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Grid Step (Pips)</span>
-          <span class="field-value" id="val-grid">50</span>
-        </div>
-        <input type="range" id="grid" min="5" max="200" step="5" value="50" oninput="onRange('grid','val-grid','');update()">
-        <div class="field-desc">📌 ระยะห่างระหว่าง Order แต่ละตัวในระบบ Grid เช่น 20 = เปิด Order ใหม่ทุกๆ ที่ราคาเคลื่อน 20 Pips</div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="martingale" onchange="updateRisk()"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Martingale ⚠️</div>
+        <div class="toggle-desc">เพิ่ม Lot เมื่อขาดทุน เพื่อครอบคลุมขาดทุนเดิม — ความเสี่ยงสูงมาก</div>
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Max Grid Orders</span>
-          <span class="field-value" id="val-gridmax">3</span>
-        </div>
-        <input type="range" id="gridmax" min="1" max="20" step="1" value="3" oninput="onRange('gridmax','val-gridmax','');update()">
-        <div class="field-desc">📌 จำนวน Order สูงสุดในแนว Grid ยิ่งมาก = ใช้เงินทุนมากขึ้นและความเสี่ยงสูงขึ้น</div>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="recoveryMode"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Recovery Mode</div>
+        <div class="toggle-desc">ปรับกลยุทธ์อัตโนมัติเมื่อ DD สูงเกินกำหนด เพื่อฟื้นฟูพอร์ต</div>
       </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Martingale</span>
-          <span class="toggle-desc">📌 เพิ่ม Lot เมื่อขาดทุน เพื่อให้ Order ถัดไปครอบคลุมขาดทุนเดิม ⚠️ ความเสี่ยงสูงมาก — ไม่แนะนำสำหรับมือใหม่</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="martin" onchange="update()"><span class="slider"></span></label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Recovery Mode</span>
-          <span class="toggle-desc">📌 โหมดฟื้นฟัวจากขาดทุน — จะปรับกลยุทธ์อัตโนมัติเมื่อ Drawdown สูงเกินกำหนด</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="recover" onchange="update()"><span class="slider"></span></label>
-      </div>
-
     </div>
   </div>
 
   <!-- SECTION 5: Time Filter -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">⏰</span>
-      <h2>Time Filter</h2>
+  <div class="section-card">
+    <div class="section-title">⏰ Time Filter (ตัวกรองเวลา)</div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="useTimeFilter" checked onchange="toggleTimeFilter()"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Use Time Filter</div>
+        <div class="toggle-desc">เปิด = EA จะทำงานเฉพาะช่วงเวลาที่กำหนดเท่านั้น</div>
+      </div>
     </div>
-    <div class="section-body">
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Use Time Filter</span>
-          <span class="toggle-desc">📌 เปิดใช้การกรองเวลา — EA จะทำงานเปิด Order เฉพาะในช่วงเวลาที่กำหนดเท่านั้น</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="usetf" onchange="update()" checked><span class="slider"></span></label>
+    <div class="field-row" id="timeFilterFields">
+      <div class="field-group">
+        <label class="field-label">Start Hour (0–23)</label>
+        <span class="field-desc">ชั่วโมงเริ่มต้นที่ EA จะเริ่มเปิด Order เช่น 8 = เริ่ม 08:00</span>
+        <input class="field-input" type="number" id="startHour" value="8" min="0" max="23">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Start Hour</span>
-          <span class="field-value" id="val-sthr">8</span>
-        </div>
-        <input type="range" id="sthr" min="0" max="23" step="1" value="8" oninput="onRange('sthr','val-sthr','');update()">
-        <div class="field-desc">📌 ชั่วโมงเริ่มต้นที่ EA จะเริ่มเปิด Order เช่น 8 = เริ่ม 08:00 Server Time</div>
+      <div class="field-group">
+        <label class="field-label">End Hour (0–23)</label>
+        <span class="field-desc">ชั่วโมงสุดท้ายที่ EA จะหยุดเปิด Order ใหม่ เช่น 20 = หยุด 20:00</span>
+        <input class="field-input" type="number" id="endHour" value="20" min="0" max="23">
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">End Hour</span>
-          <span class="field-value" id="val-enhr">20</span>
-        </div>
-        <input type="range" id="enhr" min="0" max="23" step="1" value="20" oninput="onRange('enhr','val-enhr','');update()">
-        <div class="field-desc">📌 ชั่วโมงที่ EA จะหยุดเปิด Order ใหม่ เช่น 20 = หยุด 20:00 Server Time</div>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="noTradeFriday"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">No Trade Friday</div>
+        <div class="toggle-desc">หยุดเปิด Order วันศุกร์ตอนบ่าย — หลีกเลี่ยงความผันผวนปิดตลาดสัปดาห์</div>
       </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">No Trade Friday</span>
-          <span class="toggle-desc">📌 หยุดเปิด Order วันศุกร์ตอนบ่าย เพื่อหลีกเลี่ยงความผันผวนก่อนปิดตลาดสัปดาห์</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="nofri" onchange="update()" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="noTradeMonday"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">No Trade Monday</div>
+        <div class="toggle-desc">หยุดเปิด Order วันจันทร์ตอนเช้า — หลีกเลี่ยง Gap ราคาจากช่วงสุดสัปดาห์</div>
       </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">No Trade Monday</span>
-          <span class="toggle-desc">📌 หยุดเปิด Order วันจันทร์ตอนเช้า เพื่อหลีกเลี่ยง Price Gap จากช่วงสุดสัปดาห์</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="nomon" onchange="update()"><span class="slider"></span></label>
-      </div>
-
     </div>
   </div>
 
-  <!-- SECTION 6: Display & Notification -->
-  <div class="section">
-    <div class="section-header">
-      <span class="icon">🖥️</span>
-      <h2>Display & Notification</h2>
-    </div>
-    <div class="section-body">
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Show Panel</span>
-          <span class="toggle-desc">📌 แสดงหน้าต่าง Dashboard ของ EA บนชาร์ตหรือไม่ ช่วยดูข้อมูลสถานะแบบ Real-time</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="showpanel" onchange="update()" checked><span class="slider"></span></label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Send Email Alert</span>
-          <span class="toggle-desc">📌 ส่งอีเมลแจ้งเตือนเมื่อ EA เปิด/ปิด Order ต้องตั้งค่า Email ใน MT4/MT5 ก่อน</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="sendemail" onchange="update()"><span class="slider"></span></label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Send Push Notification</span>
-          <span class="toggle-desc">📌 ส่ง Push Notification ไปยังมือถือผ่าน MetaTrader App ต้องผูก Device ID ใน MT4/MT5</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="sendpush" onchange="update()"><span class="slider"></span></label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Enable Logging</span>
-          <span class="toggle-desc">📌 บันทึก Log การทำงานของ EA ลงใน Terminal ใช้สำหรับตรวจสอบปัญหาหรือ Debug EA</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="logging" onchange="update()" checked><span class="slider"></span></label>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- SECTION 7: MT5 Extended -->
-  <div class="section mt5-only hidden" id="mt5section">
-    <div class="section-header">
-      <span class="icon">🖥️</span>
-      <h2>MT5 Extended Settings</h2>
-      <span class="badge">MT5 Only</span>
-    </div>
-    <div class="section-body">
-
-      <div class="field">
-        <span class="field-label">Filling Mode</span>
-        <select id="fillmode" onchange="update()">
+  <!-- SECTION 6: MT5 Extended -->
+  <div class="section-card mt5-section mt5-hidden" id="mt5Section">
+    <div class="section-title mt5-title">🖥️ MT5 Extended Settings <span class="badge badge-mt5">MT5 Only</span></div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Filling Mode</label>
+        <span class="field-desc">FOK = ต้องเต็มจำนวนหรือยกเลิก | IOC = เต็มเท่าที่ได้ส่วนที่เหลือยกเลิก | Return = คืนส่วนที่เหลือ</span>
+        <select class="field-input" id="fillingMode">
           <option value="FOK">FOK (Fill or Kill)</option>
           <option value="IOC">IOC (Immediate or Cancel)</option>
           <option value="Return">Return</option>
         </select>
-        <div class="field-desc">📌 <b>FOK</b> = ต้องเต็มจำนวนหรือยกเลิก | <b>IOC</b> = เต็มเท่าที่ได้ส่วนที่เหลือยกเลิก | <b>Return</b> = คืนส่วนที่เหลือ — ขึ้นอยู่กับ Broker ที่ใช้</div>
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Deviation (Points)</span>
-          <span class="field-value" id="val-dev">10</span>
-        </div>
-        <input type="range" id="dev" min="1" max="100" step="1" value="10" oninput="onRange('dev','val-dev','');update()">
-        <div class="field-desc">📌 ค่าความเบี่ยงเบนของราคาที่ยอมรับได้ใน MT5 (คล้ายกับ Slippage ใน MT4) ยิ่งน้อย = ยิ่งเข้มงวดกับราคา</div>
+      <div class="field-group">
+        <label class="field-label">Deviation</label>
+        <span class="field-desc">ค่าความเบี่ยงเบนราคาที่ยอมรับได้ใน MT5 — คล้าย Slippage ใน MT4</span>
+        <input class="field-input" type="number" id="deviation" value="20" step="5" min="5">
       </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Hedge Mode</span>
-          <span class="toggle-desc">📌 เปิดให้ EA ถือ Buy และ Sell พร้อมกันในคู่เดียวกันได้ (เฉพาะ MT5 Hedge Account)</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="hedge" onchange="update()"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="hedgeMode"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Hedge Mode</div>
+        <div class="toggle-desc">เปิดให้ EA ถือ Buy และ Sell พร้อมกันในคู่เดียวได้ (Hedge Account)</div>
       </div>
-
-      <div class="toggle-row">
-        <div class="toggle-label-wrap">
-          <span class="toggle-label">Netting Mode</span>
-          <span class="toggle-desc">📌 โหมดรวม Order ทิศทางเดียวเป็น Position เดียว (เฉพาะ MT5 Netting Account)</span>
-        </div>
-        <label class="switch"><input type="checkbox" id="netting" onchange="update()"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="nettingMode"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Netting Mode</div>
+        <div class="toggle-desc">รวม Order ทิศทางเดียวเป็น Position เดียว — สำหรับ Netting Account</div>
       </div>
-
     </div>
   </div>
 
-  <!-- SECTION 8: TELEGRAM -->
-  <div class="tg-section full-span">
-    <div class="tg-header">
-      <span style="font-size:1.2rem">✈️</span>
-      <h2>Telegram Notification</h2>
-      <span style="margin-left:auto;font-size:0.72rem;color:var(--muted)">แจ้งเตือนผ่าน Telegram Bot</span>
+  <!-- SECTION 7: Display / Notification -->
+  <div class="section-card">
+    <div class="section-title">🎛️ Display & Notifications (การแสดงผล/แจ้งเตือน)</div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="showPanel" checked><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Show Panel</div>
+        <div class="toggle-desc">แสดงหน้าต่าง Dashboard บนชาร์ตหรือไม่</div>
+      </div>
     </div>
-    <div class="tg-body">
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;flex-wrap:wrap;">
-        <div class="field">
-          <span class="field-label">🔑 Telegram Bot Token</span>
-          <div class="tg-input-wrap">
-            <input type="text" id="tgtoken" placeholder="1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ" oninput="update()" autocomplete="off">
-            <button class="tg-eye" onclick="toggleTGVis('tgtoken',this)">👁 Show</button>
-          </div>
-          <div class="field-desc">📌 Token ของ Bot ที่ได้จาก <b>@BotFather</b> ใน Telegram — ใช้สร้าง Bot แล้ว copy Token มาใส่ที่นี่</div>
-        </div>
-
-        <div class="field">
-          <span class="field-label">🆔 Telegram Chat ID</span>
-          <div class="tg-input-wrap">
-            <input type="text" id="tgchatid" placeholder="-1001234567890 หรือ 123456789" oninput="update()" autocomplete="off">
-            <button class="tg-eye" onclick="toggleTGVis('tgchatid',this)">👁 Show</button>
-          </div>
-          <div class="field-desc">📌 Chat ID ของคุณหรือ Group/Channel ที่ต้องการรับแจ้งเตือน — ดูได้จาก <b>@userinfobot</b> หรือ <b>@getidsbot</b></div>
-        </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="emailAlert"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Send Email Alert</div>
+        <div class="toggle-desc">ส่งอีเมลแจ้งเตือนเมื่อเปิด/ปิด Order</div>
       </div>
-
-      <div id="tg-status-bar" class="tg-status warn">
-        ⚠️ ยังไม่ได้ใส่ Token และ Chat ID — EA จะไม่ส่งแจ้งเตือนผ่าน Telegram
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="pushNotif"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Send Push Notification</div>
+        <div class="toggle-desc">ส่ง Push Notification ไปยังมือถือผ่าน MT4/MT5 App</div>
       </div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="toggle-row" style="flex:1;min-width:180px;">
-          <div class="toggle-label-wrap">
-            <span class="toggle-label">Telegram Alerts</span>
-            <span class="toggle-desc">📌 เปิดใช้งานการแจ้งเตือนผ่าน Telegram Bot</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="tgalert" onchange="update()"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row" style="flex:1;min-width:180px;">
-          <div class="toggle-label-wrap">
-            <span class="toggle-label">Alert on Open</span>
-            <span class="toggle-desc">📌 แจ้งเตือนเมื่อเปิด Order ใหม่</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="tgopen" onchange="update()" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row" style="flex:1;min-width:180px;">
-          <div class="toggle-label-wrap">
-            <span class="toggle-label">Alert on Close</span>
-            <span class="toggle-desc">📌 แจ้งเตือนเมื่อปิด Order</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="tgclose" onchange="update()" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row" style="flex:1;min-width:180px;">
-          <div class="toggle-label-wrap">
-            <span class="toggle-label">Alert on DD Warning</span>
-            <span class="toggle-desc">📌 แจ้งเตือนเมื่อ Drawdown สูงเกินกำหนด</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="tgdd" onchange="update()" checked><span class="slider"></span></label>
-        </div>
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="enableLogging" checked><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Enable Logging</div>
+        <div class="toggle-desc">บันทึก Log การทำงานของ EA ลงใน Terminal — ใช้สำหรับ Debug</div>
       </div>
-
     </div>
   </div>
 
-</div>
-
-<!-- OUTPUT -->
-<div class="output-wrap">
-  <div class="output-box">
-    <div class="output-header">
-      <h2>📄 Generated .set File — <span id="out-platform" style="color:var(--accent)">MT4</span> | <span id="out-mode" style="color:var(--muted)">Custom</span></h2>
-      <div class="output-actions">
-        <button class="btn btn-tgtest" onclick="testTG()">✈️ Test TG</button>
-        <button class="btn btn-copy" onclick="copySet()">📋 Copy</button>
-        <button class="btn btn-dl" onclick="dlSet()">⬇️ Download .set</button>
+  <!-- SECTION 8: Telegram -->
+  <div class="section-card telegram-section">
+    <div class="section-title telegram-title">
+      ✈️ Telegram Notifications <span class="badge badge-new">NEW</span>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Telegram Bot Token</label>
+        <span class="field-desc">Token ของ Bot ที่ได้จาก @BotFather — รูปแบบ: <code style="color:#58a6ff">123456789:ABCdefGhI...</code></span>
+        <input class="field-input" type="text" id="tgToken" placeholder="ใส่ Bot Token ของคุณ">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Telegram Chat ID</label>
+        <span class="field-desc">Chat ID ของคุณ — หาได้จาก @userinfobot หรือ @RawDataBot เช่น <code style="color:#58a6ff">-100123456789</code></span>
+        <input class="field-input" type="text" id="tgChatId" placeholder="ใส่ Chat ID ของคุณ">
       </div>
     </div>
-    <pre id="output"></pre>
+    <div class="toggle-row">
+      <label class="toggle-switch"><input type="checkbox" id="tgEnabled"><span class="toggle-slider"></span></label>
+      <div>
+        <div class="toggle-label-text">Enable Telegram Alerts</div>
+        <div class="toggle-desc">เปิดการแจ้งเตือนผ่าน Telegram เมื่อ EA เปิด/ปิด Order หรือ DD สูง</div>
+      </div>
+    </div>
+    <button class="tg-test-btn" onclick="testTelegram()">📤 ทดสอบส่ง Telegram</button>
+    <div class="tg-status" id="tgStatus"></div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-section">
+    <div class="output-title">📄 Generated .set File</div>
+    <textarea class="output-box" id="outputBox" readonly placeholder="กด 'Generate .set File' เพื่อสร้างไฟล์..."></textarea>
+    <div class="action-bar">
+      <button class="action-btn btn-generate" onclick="generateSet()">⚙️ Generate .set File</button>
+      <button class="action-btn btn-copy"     onclick="copySet()">📋 Copy</button>
+      <button class="action-btn btn-download" onclick="downloadSet()">⬇️ Download .set</button>
+    </div>
   </div>
 </div>
 
 <script>
-  let platform = 'MT4';
-  let mode = 'custom';
+  let currentPlatform = 'MT4';
 
+  // ─── Platform ───────────────────────────────────────────────
+  function setPlatform(p) {
+    currentPlatform = p;
+    document.getElementById('btnMT4').classList.toggle('active', p === 'MT4');
+    document.getElementById('btnMT5').classList.toggle('active', p === 'MT5');
+    document.getElementById('mt5Section').classList.toggle('mt5-hidden', p === 'MT4');
+  }
+
+  // ─── Time Filter Toggle ──────────────────────────────────────
+  function toggleTimeFilter() {
+    const on = document.getElementById('useTimeFilter').checked;
+    ['startHour','endHour'].forEach(id => {
+      document.getElementById(id).disabled = !on;
+    });
+  }
+
+  // ─── Presets ─────────────────────────────────────────────────
   const presets = {
-    conservative: {
-      maxdd:10, maxord:3, initlot:0.01, mult:1.2, rpt:1,
-      sigmode:'Both', entrytype:'Market', magic:1001, spread:20, slip:3,
-      tp:80, sl:40, trail:false, trailstep:10, be:15,
-      grid:50, gridmax:3, martin:false, recover:false,
-      usetf:true, sthr:8, enhr:20, nofri:true, nomon:false,
-      showpanel:true, sendemail:false, sendpush:false, logging:true,
-      fillmode:'FOK', dev:10, hedge:false, netting:false,
-      tgalert:false, tgopen:true, tgclose:true, tgdd:true
-    },
-    balanced: {
-      maxdd:20, maxord:5, initlot:0.05, mult:1.5, rpt:2,
-      sigmode:'Both', entrytype:'Market', magic:2001, spread:30, slip:5,
-      tp:50, sl:30, trail:true, trailstep:10, be:20,
-      grid:30, gridmax:5, martin:false, recover:true,
-      usetf:true, sthr:7, enhr:21, nofri:true, nomon:true,
-      showpanel:true, sendemail:false, sendpush:true, logging:true,
-      fillmode:'IOC', dev:20, hedge:false, netting:false,
-      tgalert:true, tgopen:true, tgclose:true, tgdd:true
-    },
-    aggressive: {
-      maxdd:40, maxord:10, initlot:0.1, mult:2.0, rpt:5,
-      sigmode:'Both', entrytype:'Market', magic:3001, spread:50, slip:10,
-      tp:30, sl:20, trail:true, trailstep:5, be:10,
-      grid:15, gridmax:10, martin:true, recover:true,
-      usetf:false, sthr:0, enhr:23, nofri:false, nomon:false,
-      showpanel:true, sendemail:true, sendpush:true, logging:true,
-      fillmode:'Return', dev:50, hedge:true, netting:false,
-      tgalert:true, tgopen:true, tgclose:true, tgdd:true
-    }
+    conservative: { initialLot:0.01, riskPerTrade:1, maxDD:10, maxOrders:3, lotMultiplier:1.2, gridStep:50, maxGridOrders:3, takeProfit:80, stopLoss:30 },
+    balanced:     { initialLot:0.02, riskPerTrade:2, maxDD:20, maxOrders:5, lotMultiplier:1.5, gridStep:30, maxGridOrders:5, takeProfit:50, stopLoss:25 },
+    aggressive:   { initialLot:0.05, riskPerTrade:5, maxDD:40, maxOrders:10, lotMultiplier:2.0, gridStep:15, maxGridOrders:10, takeProfit:30, stopLoss:20 }
   };
 
-  function setPlatform(p) {
-    platform = p;
-    document.getElementById('btnMT4').classList.toggle('active', p==='MT4');
-    document.getElementById('btnMT5').classList.toggle('active', p==='MT5');
-    document.getElementById('mt5section').classList.toggle('hidden', p==='MT4');
-    document.getElementById('rm-plat').textContent = p;
-    update();
-  }
-
-  function setMode(m) {
-    mode = m;
-    ['conservative','balanced','aggressive','custom'].forEach(t=>{
-      const el = document.getElementById('tab-'+t);
-      el.className = 'mode-tab';
-      if(t===m) el.classList.add('active-'+m);
+  function applyPreset(name) {
+    if (name === 'custom') {
+      document.querySelectorAll('.field-input').forEach(el => el.disabled = false);
+      updateRisk(); return;
+    }
+    const p = presets[name];
+    Object.keys(p).forEach(k => {
+      const el = document.getElementById(k);
+      if (el) { el.value = p[k]; el.disabled = false; }
     });
-    if(m !== 'custom') {
-      const p = presets[m];
-      setRange('maxdd','val-maxdd','%',p.maxdd);
-      setRange('maxord','val-maxord','',p.maxord);
-      setRange('initlot','val-initlot','',p.initlot);
-      setRange('mult','val-mult','x',p.mult);
-      setRange('rpt','val-rpt','%',p.rpt);
-      setRange('magic','val-magic','',p.magic);
-      setRange('spread','val-spread','',p.spread);
-      setRange('slip','val-slip','',p.slip);
-      setRange('tp','val-tp','',p.tp);
-      setRange('sl','val-sl','',p.sl);
-      setRange('trailstep','val-trailstep','',p.trailstep);
-      setRange('be','val-be','',p.be);
-      setRange('grid','val-grid','',p.grid);
-      setRange('gridmax','val-gridmax','',p.gridmax);
-      setRange('sthr','val-sthr','',p.sthr);
-      setRange('enhr','val-enhr','',p.enhr);
-      setRange('dev','val-dev','',p.dev);
-      document.getElementById('sigmode').value = p.sigmode;
-      document.getElementById('entrytype').value = p.entrytype;
-      document.getElementById('fillmode').value = p.fillmode;
-      ['trail','martin','recover','usetf','nofri','nomon','showpanel','sendemail','sendpush','logging','hedge','netting','tgalert','tgopen','tgclose','tgdd'].forEach(id=>{
-        document.getElementById(id).checked = p[id];
-      });
-      setAllDisabled(true);
-    } else {
-      setAllDisabled(false);
+    if (name === 'aggressive') document.getElementById('martingale').checked = true;
+    else document.getElementById('martingale').checked = false;
+    updateRisk();
+  }
+
+  // ─── Risk Meter ───────────────────────────────────────────────
+  function updateRisk() {
+    let score = 0;
+    const dd      = parseFloat(document.getElementById('maxDD').value) || 20;
+    const orders  = parseFloat(document.getElementById('maxOrders').value) || 5;
+    const mult    = parseFloat(document.getElementById('lotMultiplier').value) || 1.5;
+    const risk    = parseFloat(document.getElementById('riskPerTrade').value) || 2;
+    const grid    = parseFloat(document.getElementById('gridStep').value) || 30;
+    const mgrid   = parseFloat(document.getElementById('maxGridOrders').value) || 5;
+    const mart    = document.getElementById('martingale').checked;
+
+    score += (dd / 50) * 25;
+    score += (orders / 20) * 15;
+    score += ((mult - 1) / 4) * 20;
+    score += (risk / 10) * 15;
+    score += ((50 - Math.min(grid,50)) / 50) * 10;
+    score += (mgrid / 20) * 10;
+    if (mart) score += 15;
+    score = Math.min(100, Math.round(score));
+
+    const bar   = document.getElementById('riskBar');
+    const label = document.getElementById('riskLabel');
+    const text  = document.getElementById('riskText');
+    bar.style.width = score + '%';
+    if (score < 35) { bar.style.background='#238636'; label.textContent='ต่ำ 🟢'; }
+    else if (score < 65) { bar.style.background='#e3b341'; label.textContent='ปานกลาง 🟡'; }
+    else if (score < 85) { bar.style.background='#f85149'; label.textContent='สูง 🔴'; }
+    else { bar.style.background='#ff0000'; label.textContent='สูงมาก 🚨'; }
+    text.textContent = 'Risk Score: ' + score + ' / 100';
+  }
+
+  // ─── Telegram Test ────────────────────────────────────────────
+  async function testTelegram() {
+    const token  = document.getElementById('tgToken').value.trim();
+    const chatId = document.getElementById('tgChatId').value.trim();
+    const status = document.getElementById('tgStatus');
+    if (!token || !chatId) {
+      status.className = 'tg-status err';
+      status.textContent = '❌ กรุณาใส่ Token และ Chat ID ก่อน';
+      return;
     }
-    update();
-  }
-
-  function setAllDisabled(dis) {
-    const ids = ['maxdd','maxord','initlot','mult','rpt','magic','spread','slip','tp','sl','trailstep','be','grid','gridmax','sthr','enhr','dev'];
-    ids.forEach(id => { document.getElementById(id).disabled = dis; });
-    const selects = ['sigmode','entrytype','fillmode'];
-    selects.forEach(id => { document.getElementById(id).disabled = dis; });
-    const checks = ['trail','martin','recover','usetf','nofri','nomon','showpanel','sendemail','sendpush','logging','hedge','netting','tgalert','tgopen','tgclose','tgdd'];
-    checks.forEach(id => { document.getElementById(id).disabled = dis; });
-  }
-
-  function setRange(id, valId, suffix, val) {
-    document.getElementById(id).value = val;
-    document.getElementById(valId).textContent = val + suffix;
-  }
-
-  function onRange(id, valId, suffix) {
-    document.getElementById(valId).textContent = document.getElementById(id).value + suffix;
-  }
-
-  function g(id) { return document.getElementById(id).value; }
-  function gc(id) { return document.getElementById(id).checked; }
-
-  function updateTGStatus() {
-    const token = g('tgtoken').trim();
-    const chatid = g('tgchatid').trim();
-    const bar = document.getElementById('tg-status-bar');
-    if(token && chatid) {
-      bar.className = 'tg-status ok';
-      bar.textContent = '✅ ตั้งค่า Telegram ครบแล้ว — EA พร้อมส่งแจ้งเตือน';
-    } else if(token || chatid) {
-      bar.className = 'tg-status warn';
-      bar.textContent = '⚠️ กรุณาใส่ทั้ง Token และ Chat ID ให้ครบ';
-    } else {
-      bar.className = 'tg-status warn';
-      bar.textContent = '⚠️ ยังไม่ได้ใส่ Token และ Chat ID — EA จะไม่ส่งแจ้งเตือนผ่าน Telegram';
+    status.className = 'tg-status ok';
+    status.textContent = '⏳ กำลังส่ง...';
+    try {
+      const msg = encodeURIComponent('✅ EA Profile Configurator — ทดสอบการเชื่อมต่อ Telegram สำเร็จ!');
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${msg}`);
+      const data = await res.json();
+      if (data.ok) {
+        status.className = 'tg-status ok';
+        status.textContent = '✅ ส่งสำเร็จ! เช็คข้อความใน Telegram ของคุณได้เลย';
+      } else {
+        status.className = 'tg-status err';
+        status.textContent = '❌ Error: ' + (data.description || 'ไม่ทราบสาเหตุ');
+      }
+    } catch(e) {
+      status.className = 'tg-status err';
+      status.textContent = '❌ ไม่สามารถเชื่อมต่อได้ ตรวจสอบ Token อีกครั้ง';
     }
   }
 
-  function toggleTGVis(id, btn) {
-    const el = document.getElementById(id);
-    if(el.type==='text') { el.type='password'; btn.textContent='👁 Show'; }
-    else { el.type='text'; btn.textContent='🙈 Hide'; }
-  }
-
-  function update() {
-    updateRiskMeter();
-    updateTGStatus();
-    const lines = generateSet();
-    document.getElementById('output').textContent = lines;
-    document.getElementById('out-platform').textContent = platform;
-    document.getElementById('out-mode').textContent = mode.charAt(0).toUpperCase()+mode.slice(1);
-    document.getElementById('rm-mode').textContent = mode.charAt(0).toUpperCase()+mode.slice(1);
-  }
-
-  function updateRiskMeter() {
-    const dd = parseFloat(g('maxdd'));
-    const ord = parseFloat(g('maxord'));
-    const mult = parseFloat(g('mult'));
-    const rpt = parseFloat(g('rpt'));
-    const score = (dd/50*40) + (ord/20*25) + ((mult-1)/2*20) + (rpt/10*15);
-    const pct = Math.min(score, 100);
-    const bar = document.getElementById('riskBar');
-    bar.style.width = pct+'%';
-    let color = 'var(--green)', level = '🟢 LOW';
-    if(pct>60){ color='var(--red)'; level='🔴 HIGH'; }
-    else if(pct>35){ color='var(--yellow)'; level='🟡 MEDIUM'; }
-    bar.style.background = color;
-    document.getElementById('rm-dd').textContent = dd+'%';
-    document.getElementById('rm-dd').style.color = color;
-    document.getElementById('rm-orders').textContent = ord;
-    document.getElementById('rm-mult').textContent = mult+'x';
-    document.getElementById('rm-level').textContent = level;
-    document.getElementById('rm-level').style.color = color;
-  }
-
-  function bool(v){ return v?'true':'false'; }
+  // ─── Generate .set ────────────────────────────────────────────
+  function v(id) { return document.getElementById(id).value; }
+  function b(id) { return document.getElementById(id).checked ? 'true' : 'false'; }
 
   function generateSet() {
-    const isMT5 = platform === 'MT5';
-    const token = g('tgtoken').trim() || '';
-    const chatid = g('tgchatid').trim() || '';
-    const sep = isMT5 ? '||' : '=';
-    const fmt = (k,v) => isMT5 ? `${k}=${v}` : `${k}=${v}`;
+    const isMT5  = currentPlatform === 'MT5';
+    const sep    = isMT5 ? '||' : '=';
+    const nl     = '\n';
+    const tgOn   = document.getElementById('tgEnabled').checked;
 
-    let lines = [];
-    lines.push(`; ================================================================`);
-    lines.push(`; EA Profile Configurator — Generated .set File`);
-    lines.push(`; Platform : ${platform}`);
-    lines.push(`; Mode     : ${mode.toUpperCase()}`);
-    lines.push(`; Generated: ${new Date().toLocaleString('th-TH')}`);
-    lines.push(`; ================================================================`);
-    lines.push(``);
-    lines.push(`; ---- Risk Management ----`);
-    lines.push(`MaxDrawdown=${g('maxdd')}`);
-    lines.push(`MaxOrders=${g('maxord')}`);
-    lines.push(`InitialLot=${parseFloat(g('initlot')).toFixed(2)}`);
-    lines.push(`LotMultiplier=${parseFloat(g('mult')).toFixed(1)}`);
-    lines.push(`RiskPerTrade=${g('rpt')}`);
-    lines.push(``);
-    lines.push(`; ---- Entry Settings ----`);
-    lines.push(`SignalMode=${g('sigmode')}`);
-    lines.push(`EntryType=${g('entrytype')}`);
-    lines.push(`MagicNumber=${g('magic')}`);
-    lines.push(`MaxSpread=${g('spread')}`);
-    lines.push(`Slippage=${g('slip')}`);
-    lines.push(``);
-    lines.push(`; ---- Take Profit & Stop Loss ----`);
-    lines.push(`TakeProfit=${g('tp')}`);
-    lines.push(`StopLoss=${g('sl')}`);
-    lines.push(`TrailingStop=${bool(gc('trail'))}`);
-    lines.push(`TrailingStep=${g('trailstep')}`);
-    lines.push(`BreakEven=${g('be')}`);
-    lines.push(``);
-    lines.push(`; ---- Grid / Martingale ----`);
-    lines.push(`GridStep=${g('grid')}`);
-    lines.push(`MaxGridOrders=${g('gridmax')}`);
-    lines.push(`Martingale=${bool(gc('martin'))}`);
-    lines.push(`RecoveryMode=${bool(gc('recover'))}`);
-    lines.push(``);
-    lines.push(`; ---- Time Filter ----`);
-    lines.push(`UseTimeFilter=${bool(gc('usetf'))}`);
-    lines.push(`StartHour=${g('sthr')}`);
-    lines.push(`EndHour=${g('enhr')}`);
-    lines.push(`NoTradeFriday=${bool(gc('nofri'))}`);
-    lines.push(`NoTradeMonday=${bool(gc('nomon'))}`);
-    lines.push(``);
-    lines.push(`; ---- Display & Notification ----`);
-    lines.push(`ShowPanel=${bool(gc('showpanel'))}`);
-    lines.push(`SendEmailAlert=${bool(gc('sendemail'))}`);
-    lines.push(`SendPushNotification=${bool(gc('sendpush'))}`);
-    lines.push(`EnableLogging=${bool(gc('logging'))}`);
+    let out = `; ════════════════════════════════════════════\n`;
+    out += `; EA Profile Configurator — Generated .set\n`;
+    out += `; Platform : ${currentPlatform}\n`;
+    out += `; Date     : ${new Date().toLocaleString('th-TH')}\n`;
+    out += `; ════════════════════════════════════════════\n\n`;
 
-    if(isMT5) {
-      lines.push(``);
-      lines.push(`; ---- MT5 Extended Settings ----`);
-      lines.push(`FillingMode=${g('fillmode')}`);
-      lines.push(`Deviation=${g('dev')}`);
-      lines.push(`HedgeMode=${bool(gc('hedge'))}`);
-      lines.push(`NettingMode=${bool(gc('netting'))}`);
+    const line = (k, val) => isMT5 ? `${k}=${val}||0||0\n` : `${k}=${val}\n`;
+
+    out += `; --- Risk Management ---\n`;
+    out += line('InitialLot',     v('initialLot'));
+    out += line('RiskPerTrade',   v('riskPerTrade'));
+    out += line('MaxDrawdown',    v('maxDD'));
+    out += line('MaxOrders',      v('maxOrders'));
+    out += line('LotMultiplier',  v('lotMultiplier'));
+    out += line('MagicNumber',    v('magicNumber'));
+
+    out += `\n; --- Entry Settings ---\n`;
+    out += line('SignalMode',     v('signalMode'));
+    out += line('EntryType',      v('entryType'));
+    out += line('MaxSpread',      v('maxSpread'));
+    out += line('Slippage',       v('slippage'));
+
+    out += `\n; --- Take Profit / Stop Loss ---\n`;
+    out += line('TakeProfit',     v('takeProfit'));
+    out += line('StopLoss',       v('stopLoss'));
+    out += line('TrailingStop',   b('trailingStop'));
+    out += line('TrailingStep',   v('trailingStep'));
+    out += line('BreakEven',      v('breakEven'));
+
+    out += `\n; --- Grid / Martingale ---\n`;
+    out += line('GridStep',       v('gridStep'));
+    out += line('MaxGridOrders',  v('maxGridOrders'));
+    out += line('Martingale',     b('martingale'));
+    out += line('RecoveryMode',   b('recoveryMode'));
+
+    out += `\n; --- Time Filter ---\n`;
+    out += line('UseTimeFilter',  b('useTimeFilter'));
+    out += line('StartHour',      v('startHour'));
+    out += line('EndHour',        v('endHour'));
+    out += line('NoTradeFriday',  b('noTradeFriday'));
+    out += line('NoTradeMonday',  b('noTradeMonday'));
+
+    if (isMT5) {
+      out += `\n; --- MT5 Extended ---\n`;
+      out += line('FillingMode',  v('fillingMode'));
+      out += line('Deviation',    v('deviation'));
+      out += line('HedgeMode',    b('hedgeMode'));
+      out += line('NettingMode',  b('nettingMode'));
     }
 
-    lines.push(``);
-    lines.push(`; ---- Telegram Notification ----`);
-    lines.push(`TelegramAlerts=${bool(gc('tgalert'))}`);
-    lines.push(`TelegramBotToken=${token || '<YOUR_BOT_TOKEN>'}`);
-    lines.push(`TelegramChatID=${chatid || '<YOUR_CHAT_ID>'}`);
-    lines.push(`TelegramAlertOnOpen=${bool(gc('tgopen'))}`);
-    lines.push(`TelegramAlertOnClose=${bool(gc('tgclose'))}`);
-    lines.push(`TelegramAlertOnDDWarning=${bool(gc('tgdd'))}`);
+    out += `\n; --- Display & Notifications ---\n`;
+    out += line('ShowPanel',      b('showPanel'));
+    out += line('EmailAlert',     b('emailAlert'));
+    out += line('PushNotif',      b('pushNotif'));
+    out += line('EnableLogging',  b('enableLogging'));
 
-    return lines.join('\n');
+    out += `\n; --- Telegram Notifications ---\n`;
+    out += line('TelegramEnabled', tgOn ? 'true' : 'false');
+    out += line('TelegramToken',   v('tgToken')  || 'YOUR_BOT_TOKEN');
+    out += line('TelegramChatID',  v('tgChatId') || 'YOUR_CHAT_ID');
+
+    out += `\n; ════════════════════════════════════════════\n`;
+    out += `; END OF FILE\n`;
+    out += `; ════════════════════════════════════════════\n`;
+
+    document.getElementById('outputBox').value = out;
   }
 
   function copySet() {
-    navigator.clipboard.writeText(document.getElementById('output').textContent).then(()=>{
-      const btn = document.querySelector('.btn-copy');
-      btn.textContent = '✅ Copied!'; btn.style.background='var(--green)';
-      setTimeout(()=>{ btn.textContent='📋 Copy'; btn.style.background=''; },2000);
-    });
+    const box = document.getElementById('outputBox');
+    if (!box.value) { generateSet(); }
+    navigator.clipboard.writeText(box.value)
+      .then(() => alert('✅ คัดลอกสำเร็จแล้ว!'))
+      .catch(() => { box.select(); document.execCommand('copy'); alert('✅ คัดลอกสำเร็จ!'); });
   }
 
-  function dlSet() {
-    const txt = document.getElementById('output').textContent;
-    const blob = new Blob([txt], {type:'text/plain'});
+  function downloadSet() {
+    if (!document.getElementById('outputBox').value) generateSet();
+    const blob = new Blob([document.getElementById('outputBox').value], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `EA_Profile_${platform}_${mode}_${Date.now()}.set`;
+    a.download = `EA_Profile_${currentPlatform}_${Date.now()}.set`;
     a.click();
   }
 
-  function testTG() {
-    const token = document.getElementById('tgtoken').value.trim();
-    const chatid = document.getElementById('tgchatid').value.trim();
-    if(!token || !chatid) {
-      alert('⚠️ กรุณาใส่ Telegram Bot Token และ Chat ID ก่อนทดสอบ');
-      return;
-    }
-    const msg = encodeURIComponent(`✅ EA Profile Configurator\nทดสอบการแจ้งเตือน Telegram สำเร็จ! 🎉\n\nPlatform: ${platform}\nMode: ${mode.toUpperCase()}\nTime: ${new Date().toLocaleString('th-TH')}`);
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatid}&text=${msg}`;
-    fetch(url)
-      .then(r=>r.json())
-      .then(d=>{
-        if(d.ok) alert('✅ ส่ง Telegram สำเร็จ! ตรวจสอบ Chat ของคุณได้เลย');
-        else alert('❌ ส่งไม่สำเร็จ: '+d.description);
-      })
-      .catch(()=>alert('❌ เกิดข้อผิดพลาด กรุณาตรวจสอบ Token และ Chat ID อีกครั้ง'));
-  }
-
   // Init
-  setMode('custom');
-  update();
+  updateRisk();
+  toggleTimeFilter();
 </script>
 </body>
 </html>
